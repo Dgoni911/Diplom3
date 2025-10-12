@@ -1,49 +1,30 @@
-import allure
-from .base_page import BasePage
+from pages.base_page import BasePage
 from locators.order_feed_locators import OrderFeedLocators
-
+from helpers.url_helper import UrlHelper
 
 class OrderFeedPage(BasePage):
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.url = UrlHelper.get_url("feed")
     
-    @allure.step("Получить общее количество заказов")
+    def open(self):
+        self.driver.get(self.url)
+    
     def get_total_orders_count(self):
-        count_text = self.get_text(OrderFeedLocators.TOTAL_ORDERS_COUNT)
-        return int(count_text)
+        element = self.find_element(OrderFeedLocators.TOTAL_ORDERS)
+        return int(element.text)
     
-    @allure.step("Получить количество заказов за сегодня")
     def get_today_orders_count(self):
-        count_text = self.get_text(OrderFeedLocators.TODAY_ORDERS_COUNT)
-        return int(count_text)
+        element = self.find_element(OrderFeedLocators.TODAY_ORDERS)
+        return int(element.text)
     
-    @allure.step("Получить номера заказов в работе")
     def get_orders_in_progress(self):
-        orders = self.find_elements(OrderFeedLocators.ORDERS_IN_PROGRESS)
-        order_numbers = []
-        for order in orders:
-            try:
-                number = order.find_element(*OrderFeedLocators.ORDER_NUMBER).text
-                order_numbers.append(number)
-            except:
-                continue
-        return order_numbers
+        elements = self.find_elements(OrderFeedLocators.ORDERS_IN_PROGRESS)
+        return [elem.text for elem in elements]
     
-    @allure.step("Проверить наличие номера заказа в разделе 'В работе'")
-    def is_order_in_progress(self, order_number):
-        orders_in_progress = self.get_orders_in_progress()
-        return order_number in orders_in_progress
-    
-    @allure.step("Подождать обновления счетчиков")
-    def wait_for_counters_update(self, initial_total, initial_today, timeout=30):
-        import time
-        start_time = time.time()
-        
-        while time.time() - start_time < timeout:
-            current_total = self.get_total_orders_count()
-            current_today = self.get_today_orders_count()
-            
-            if current_total > initial_total or current_today > initial_today:
-                return True
-            
-            time.sleep(1)
-        
-        return False
+    def get_latest_order_number(self):
+        orders = self.find_elements(OrderFeedLocators.ORDER_ITEMS)
+        if orders:
+            order_number_element = orders[0].find_element(*OrderFeedLocators.ORDER_NUMBER)
+            return order_number_element.text
+        return None

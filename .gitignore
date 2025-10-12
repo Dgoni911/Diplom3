@@ -1,5 +1,3 @@
-# .gitignore
-
 # Python
 __pycache__/
 *.py[cod]
@@ -21,28 +19,28 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
+# PyTest
+.pytest_cache/
 .cache
 nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
-.pytest_cache/
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# Allure
+allure-results/
+allure-report/
+*.json
+*.txt
+
+# Screenshots
+screenshots/
+
+# Logs
+*.log
+logs/
 
 # IDE
 .vscode/
@@ -54,10 +52,12 @@ venv.bak/
 .DS_Store
 Thumbs.db
 
-# Coverage reports
-.coverage
-coverage.xml
-htmlcov/
+# Selenium
+webdriver/
+drivers/
+geckodriver.log
+chromedriver.log
 
-# pytest
-.pytest_cache/
+# Virtual environment
+venv/
+env/

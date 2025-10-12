@@ -1,43 +1,63 @@
-import allure
-from .base_page import BasePage
+from pages.base_page import BasePage
 from locators.main_page_locators import MainPageLocators
-from locators.constructor_locators import ConstructorLocators
-
+from locators.order_modal_locators import OrderModalLocators
+from locators.login_locators import LoginLocators
+from helpers.url_helper import UrlHelper
+import time
 
 class MainPage(BasePage):
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.url = UrlHelper.get_url("main")
+        self.locators = MainPageLocators()
     
-    @allure.step("Кликнуть на конструктор")
+    def open(self):
+        self.driver.get(self.url)
+        self.wait_for_page_loaded()
+    
+    def wait_for_page_loaded(self):
+        self.find_element(MainPageLocators.CONSTRUCTOR_BUTTON)
+    
     def click_constructor(self):
-        self.click(MainPageLocators.CONSTRUCTOR_BUTTON)
-        self.wait.wait_for_page_load()
+        self.click_element(MainPageLocators.CONSTRUCTOR_BUTTON)
     
-    @allure.step("Кликнуть на ленту заказов")
     def click_order_feed(self):
-        self.click(MainPageLocators.ORDER_FEED_BUTTON)
-        self.wait.wait_for_page_load()
+        self.click_element(MainPageLocators.ORDER_FEED_BUTTON)
     
-    @allure.step("Кликнуть на ингредиент")
+    def click_personal_account(self):
+        self.click_element(MainPageLocators.PERSONAL_ACCOUNT_BUTTON)
+        time.sleep(2)
+    
     def click_ingredient(self, index=0):
         ingredients = self.find_elements(MainPageLocators.INGREDIENT_ITEM)
         if ingredients and index < len(ingredients):
-            self.browser.scroll_to_element(ingredients[index])
-            self.click_by_element(ingredients[index])
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", ingredients[index])
+            time.sleep(0.5)
+            ingredients[index].click()
+            self.wait_for_element_visible(OrderModalLocators.INGREDIENT_DETAILS, timeout=5)
     
-    @allure.step("Кликнуть на элемент напрямую")
-    def click_by_element(self, element):
-        self.browser.safe_click_element(element)
+    def get_ingredient_counter(self, index=0):
+        ingredients = self.find_elements(MainPageLocators.INGREDIENT_ITEM)
+        if ingredients and index < len(ingredients):
+            counter_elements = ingredients[index].find_elements(*MainPageLocators.INGREDIENT_COUNTER)
+            if counter_elements:
+                return int(counter_elements[0].text)
+        return 0
     
-    @allure.step("Закрыть модальное окно")
-    def close_modal(self):
-        self.click(MainPageLocators.MODAL_CLOSE_BUTTON)
-        self.wait.wait_for_element_to_disappear(MainPageLocators.MODAL)
+    def is_ingredient_modal_visible(self):
+        return self.is_element_present(OrderModalLocators.INGREDIENT_DETAILS, timeout=3)
     
-    @allure.step("Добавить ингредиент в конструктор")
-    def add_ingredient_to_constructor(self, ingredient_locator):
-        self.drag_and_drop(ingredient_locator, ConstructorLocators.INGREDIENTS_DROP_ZONE)
-        
-        self.wait.wait_for_condition(
-            lambda: self.get_ingredient_counter(self.get_ingredient_element(0)) > 0,
-            timeout=10,
-            description="Счетчик ингредиента не обновился"
-        )
+    def close_ingredient_modal(self):
+        return self.close_modal()
+    
+    def click_make_order(self):
+        self.click_element(MainPageLocators.ORDER_BUTTON)
+    
+    def click_buns_section(self):
+        self.click_element(MainPageLocators.BUNS_SECTION)
+    
+    def click_sauces_section(self):
+        self.click_element(MainPageLocators.SAUCES_SECTION)
+    
+    def click_fillings_section(self):
+        self.click_element(MainPageLocators.FILLINGS_SECTION)
