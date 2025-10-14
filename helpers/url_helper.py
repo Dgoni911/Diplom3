@@ -1,15 +1,23 @@
+import allure
+
 class UrlHelper:
-    BASE_URL = "https://stellarburgers.education-services.ru/"
-    LOGIN_URL = BASE_URL + "login"
-    FEED_URL = BASE_URL + "feed"
-    PROFILE_URL = BASE_URL + "account/profile"
+    def __init__(self, base_url="https://stellarburgers.education-services.ru/"):
+        self.base_url = base_url
     
-    @classmethod
-    def get_url(cls, page_name):
+    @allure.step("Получить базовый URL")
+    def get_base_url(self):
+        return self.base_url.rstrip('/')  
+    
+    @allure.step("Получить URL для {page_name}")
+    def get_url(self, page_name):
+        base = self.base_url.rstrip('/')  
         urls = {
-            "main": cls.BASE_URL,
-            "login": cls.LOGIN_URL,
-            "feed": cls.FEED_URL,
-            "profile": cls.PROFILE_URL
+            "main": base + "/",
+            "login": base + "/login",
+            "register": base + "/register",
+            "forgot-password": base + "/forgot-password",
+            "reset-password": base + "/reset-password",
+            "profile": base + "/account/profile",
+            "feed": base + "/feed"
         }
-        return urls.get(page_name, cls.BASE_URL)
+        return urls.get(page_name, base)

@@ -1,5 +1,6 @@
 import random
 import string
+import allure
 
 class DataHelper:
     @staticmethod
@@ -15,3 +16,14 @@ class DataHelper:
     @staticmethod
     def generate_name():
         return ''.join(random.choices(string.ascii_letters, k=10))
+    
+class DataHelper:
+    @staticmethod
+    @allure.step("Получить email тестового пользователя")
+    def get_test_user_email():
+        return "dgoni911@gmail.com"  
+    
+    @staticmethod
+    @allure.step("Получить пароль тестового пользователя")
+    def get_test_user_password():
+        return "dgoni911"      

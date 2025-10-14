@@ -18,7 +18,6 @@ allure serve allure-results
 stellarburgers-ui-tests/
 ├── pages/
 │   ├── __init__.py
-│   ├── base_page.py
 │   ├── main_page.py
 │   ├── constructor_page.py
 │   ├── order_feed_page.py
@@ -41,6 +40,7 @@ stellarburgers-ui-tests/
 ├── tests/
 │   ├── __init__.py
 │   ├── conftest.py
+    ├── test_additional.py
 │   ├── test_constructor.py
 │   └── test_order_feed.py
 ├── utils/
@@ -49,7 +49,4 @@ stellarburgers-ui-tests/
 ├── __init__.py
 ├── requirements.txt
 ├── pytest.ini
-├── run_tests.py
-├── generate_report.py
-├── test_imports.py
 └── .gitignore
