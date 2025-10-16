@@ -64,31 +64,15 @@ def browser(request):
 def main_page(browser):
     from pages.main_page import MainPage
     page = MainPage(browser)
-    
-    max_attempts = 3
-    for attempt in range(max_attempts):
-        try:
-            page.open()
-            return page
-        except Exception as e:
-            if attempt == max_attempts - 1:
-                raise e
-            browser.refresh()
+    page.open()
+    return page
 
 @pytest.fixture
 def order_feed_page(browser):
     from pages.order_feed_page import OrderFeedPage
     page = OrderFeedPage(browser)
-    
-    max_attempts = 3
-    for attempt in range(max_attempts):
-        try:
-            page.open()
-            return page
-        except Exception as e:
-            if attempt == max_attempts - 1:
-                raise e
-            browser.refresh()
+    page.open()
+    return page
 
 @pytest.fixture
 def order_modal(browser):
@@ -99,31 +83,15 @@ def order_modal(browser):
 def constructor_page(browser):
     from pages.constructor_page import ConstructorPage
     page = ConstructorPage(browser)
-    
-    max_attempts = 3
-    for attempt in range(max_attempts):
-        try:
-            page.open()
-            return page
-        except Exception as e:
-            if attempt == max_attempts - 1:
-                raise e
-            browser.refresh()
+    page.open()
+    return page
 
 @pytest.fixture
 def login_page(browser):
     from pages.login_page import LoginPage
     page = LoginPage(browser)
-    
-    max_attempts = 3
-    for attempt in range(max_attempts):
-        try:
-            page.open()
-            return page
-        except Exception as e:
-            if attempt == max_attempts - 1:
-                raise e
-            browser.refresh()
+    page.open()
+    return page
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
@@ -138,26 +106,5 @@ def pytest_runtest_makereport(item, call):
                 os.makedirs(screenshot_dir, exist_ok=True)
                 screenshot_path = os.path.join(screenshot_dir, f"{item.name}.png")
                 browser.save_screenshot(screenshot_path)
-                print(f"Screenshot saved: {screenshot_path}")
-        except Exception as e:
-            print(f"Failed to take screenshot: {e}")
-
-@pytest.fixture
-def main_page(browser):
-    from pages.main_page import MainPage
-    from utils.debug_utils import debug_page_structure
-    
-    page = MainPage(browser)
-    
-    max_attempts = 3
-    for attempt in range(max_attempts):
-        try:
-            page.open()
-            if attempt > 0:
-                debug_page_structure(browser, "main_page_retry")
-            return page
-        except Exception as e:
-            if attempt == max_attempts - 1:
-                debug_page_structure(browser, "main_page_failed")
-                raise e
-            browser.refresh()           
+        except Exception:
+            pass

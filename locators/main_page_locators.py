@@ -29,3 +29,6 @@ class MainPageLocators:
     LOGIN_FORM = (By.XPATH, "//form[contains(@class, 'Auth_form')]")
     
     ORDER_FEED_SECTION = (By.XPATH, "//section[contains(@class, 'OrderFeed') or contains(@class, 'order-feed') or contains(@class, 'feed')]")
+    
+    PAGE_TITLE = (By.XPATH, "//h1[contains(text(), 'Соберите бургер')]")
+    CONSTRUCTOR_TEXT = (By.XPATH, "//p[contains(text(), 'Конструктор')]")

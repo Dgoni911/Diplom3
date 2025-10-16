@@ -15,7 +15,7 @@ pytest --browser=firefox
 pytest --alluredir=allure-results
 allure serve allure-results
 
-stellarburgers-ui-tests/
+
 ├── pages/
 │   ├── __init__.py
 │   ├── main_page.py
