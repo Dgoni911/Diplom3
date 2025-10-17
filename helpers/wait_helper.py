@@ -24,6 +24,11 @@ class WaitHelper:
         wait = WebDriverWait(self.driver, wait_timeout)
         return wait.until(EC.visibility_of_element_located(locator))
     
+    def wait_for_element_not_visible(self, locator, timeout=None):
+        wait_timeout = timeout or self.timeout
+        wait = WebDriverWait(self.driver, wait_timeout)
+        return wait.until(EC.invisibility_of_element_located(locator))
+    
     def wait_for_element_clickable(self, locator, timeout=None):
         wait_timeout = timeout or self.timeout
         wait = WebDriverWait(self.driver, wait_timeout)
