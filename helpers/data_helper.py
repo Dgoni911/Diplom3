@@ -21,9 +21,9 @@ class DataHelper:
     @staticmethod
     @allure.step("Получить email тестового пользователя")
     def get_test_user_email():
-        return "dgoni911@gmail.com"  
+        return "test-user@yandex.ru"  
     
     @staticmethod
     @allure.step("Получить пароль тестового пользователя")
     def get_test_user_password():
-        return "dgoni911"      
+        return "password123"      

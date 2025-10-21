@@ -32,3 +32,7 @@ class MainPageLocators:
     
     PAGE_TITLE = (By.XPATH, "//h1[contains(text(), 'Соберите бургер')]")
     CONSTRUCTOR_TEXT = (By.XPATH, "//p[contains(text(), 'Конструктор')]")
+    
+    CONSTRUCTOR_BUTTON_ALT = (By.XPATH, "//p[contains(text(), 'Конструктор')]/parent::a")
+    ORDER_FEED_BUTTON_ALT = (By.XPATH, "//p[contains(text(), 'Лента Заказов')]/parent::a")
+    PERSONAL_ACCOUNT_BUTTON_ALT = (By.XPATH, "//p[contains(text(), 'Личный Кабинет')]/parent::a")

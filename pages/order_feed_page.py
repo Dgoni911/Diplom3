@@ -1,6 +1,7 @@
 import allure
 from pages.base_page import BasePage
 from locators.order_feed_locators import OrderFeedLocators
+from locators.order_modal_locators import OrderModalLocators
 
 class OrderFeedPage(BasePage):
     def __init__(self, driver):
@@ -76,39 +77,31 @@ class OrderFeedPage(BasePage):
     
     @allure.step("Проверить отображение модального окна заказа")
     def is_order_modal_visible(self):
-        modal_selectors = [
-            "[class*='modal']",
-            "[class*='popup']", 
-            "[role='dialog']"
-        ]
-        for selector in modal_selectors:
-            elements = self.driver.find_elements_by_css_selector(selector)
-            if elements and elements[0].is_displayed():
-                return True
-        return False
+        return self.is_visible(OrderModalLocators.ORDER_MODAL, timeout=3)
     
     @allure.step("Получить номер заказа из модального окна")
     def get_order_number_from_modal(self):
         try:
-            return "12345"
+            order_number_element = self.find_element(OrderModalLocators.ORDER_NUMBER, timeout=3)
+            return order_number_element.text
         except:
             return ""
     
     @allure.step("Получить статус заказа из модального окна")
     def get_order_status_from_modal(self):
         try:
-            return "Выполнен"
+            status_element = self.find_element(OrderModalLocators.ORDER_STATUS, timeout=3)
+            return status_element.text
         except:
             return ""
     
     @allure.step("Закрыть модальное окно заказа")
     def close_order_modal(self):
         try:
-            from selenium.webdriver.common.keys import Keys
-            from selenium.webdriver.common.action_chains import ActionChains
-            actions = ActionChains(self.driver)
-            actions.send_keys(Keys.ESCAPE).perform()
-            return True
+            if self.is_visible(OrderModalLocators.ORDER_MODAL_CLOSE, timeout=2):
+                self.click(OrderModalLocators.ORDER_MODAL_CLOSE)
+                return True
+            return False
         except:
             return False
     
@@ -147,4 +140,6 @@ class OrderFeedPage(BasePage):
     
     @allure.step("Проверить загрузку страницы ленты заказов")
     def is_order_feed_page_loaded(self):
-        return self.is_present(self.locators.ORDER_FEED_SECTION) or self.is_present(self.locators.TOTAL_ORDERS) or self.is_present(self.locators.ORDER_ITEMS)
+        return (self.is_present(self.locators.ORDER_FEED_SECTION) or 
+                self.is_present(self.locators.TOTAL_ORDERS) or 
+                self.is_present(self.locators.ORDER_ITEMS))

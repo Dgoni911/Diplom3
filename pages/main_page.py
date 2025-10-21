@@ -34,26 +34,17 @@ class MainPage(BasePage):
     
     @allure.step("Кликнуть на конструктор")
     def click_constructor(self):
-        try:
-            self.click(self.locators.CONSTRUCTOR_BUTTON)
-        except:
-            self.click((By.XPATH, "//p[contains(text(), 'Конструктор')]/parent::a"))
+        self.click(self.locators.CONSTRUCTOR_BUTTON_ALT)
         return self
     
     @allure.step("Кликнуть на ленту заказов")
     def click_order_feed(self):
-        try:
-            self.click(self.locators.ORDER_FEED_BUTTON)
-        except:
-            self.click((By.XPATH, "//p[contains(text(), 'Лента Заказов')]/parent::a"))
+        self.click(self.locators.ORDER_FEED_BUTTON_ALT)
         return self.wait_for_page_loaded()
     
     @allure.step("Кликнуть на личный кабинет")
     def click_personal_account(self):
-        try:
-            self.click(self.locators.PERSONAL_ACCOUNT_BUTTON)
-        except:
-            self.click((By.XPATH, "//p[contains(text(), 'Личный Кабинет')]/parent::a"))
+        self.click(self.locators.PERSONAL_ACCOUNT_BUTTON_ALT)
         return self.wait_for_page_loaded()
     
     @allure.step("Кликнуть на ингредиент {index}")
@@ -63,7 +54,7 @@ class MainPage(BasePage):
         if all_ingredients and index < len(all_ingredients):
             self.execute_script("arguments[0].scrollIntoView(true);", all_ingredients[index])
             all_ingredients[index].click()
-            self.wait_for_element_visible(OrderModalLocators.INGREDIENT_DETAILS)
+            self.wait.wait_for_element_visible(OrderModalLocators.INGREDIENT_DETAILS)
         return self
     
     @allure.step("Проверить видимость модального окна ингредиента")
@@ -94,31 +85,47 @@ class MainPage(BasePage):
     def add_ingredient_to_constructor(self, index):
         ingredients = self.find_elements(self.locators.INGREDIENT_ITEM)
         if ingredients and index < len(ingredients):
+            self.execute_script("arguments[0].scrollIntoView({block: 'center'});", ingredients[index])
+            self.wait.wait_for_element_clickable(self.locators.INGREDIENT_ITEM)
+        
+        try:
+            self.execute_script("arguments[0].click();", ingredients[index])
+        except:
             ingredients[index].click()
         return self
-    
+
     @allure.step("Создать тестовый заказ")
     def create_test_order(self):
-        return (self.add_ingredient_to_constructor(0)
-                .add_ingredient_to_constructor(5)
-                .add_ingredient_to_constructor(10)
-                .click_make_order())
+        self.wait.wait_for_element_visible(self.locators.INGREDIENT_ITEM)
+    
+        with allure.step("Добавить ингредиенты в конструктор"):
+            self.add_ingredient_to_constructor(0)
+            self.add_ingredient_to_constructor(1)
+            self.add_ingredient_to_constructor(2)
+    
+        return self.click_make_order()
+    @allure.step("Проверить статус авторизации")
+    def check_auth_status(self):
+        try:
+            return self.is_visible(self.locators.PERSONAL_ACCOUNT_BUTTON, timeout=2)
+        except:
+            return False
     
     @allure.step("Дождаться подтверждения заказа")
     def wait_for_order_confirmation(self, timeout=30):
-        return self.is_visible((By.XPATH, "//p[contains(@class, 'digits-large')]"), timeout)
+        return self.is_visible(OrderModalLocators.ORDER_NUMBER, timeout)
     
     @allure.step("Получить номер созданного заказа")
     def get_created_order_number(self):
         try:
-            order_number_element = self.find_element((By.XPATH, "//p[contains(@class, 'digits-large')]"), timeout=5)
+            order_number_element = self.find_element(OrderModalLocators.ORDER_NUMBER, timeout=5)
             return order_number_element.text
         except:
             return "0000"
     
     @allure.step("Закрыть модальное окно заказа")
     def close_order_modal(self):
-        return self.is_visible((By.XPATH, "//button[contains(@class, 'Modal_close')]"), timeout=5)
+        return self.is_visible(OrderModalLocators.ORDER_MODAL_CLOSE, timeout=5)
     
     @allure.step("Проверить наличие кнопки конструктора")
     def is_constructor_button_present(self):
