@@ -5,88 +5,97 @@ from helpers.data_helper import DataHelper
 @allure.feature("Лента заказов")
 class TestOrderFeed:
     
-    @allure.title("Проверка изменения счетчиков после оформления заказа")
-    @allure.description("Тест проверяет изменение счетчиков заказов после успешного оформления")
-    def test_order_counters_update_after_order(self, main_page, order_feed_page, login_page):
-
+    @allure.title("Проверка изменения общего счетчика заказов после оформления")
+    @allure.description("Тест проверяет изменение общего счетчика заказов после успешного оформления")
+    def test_total_order_counter_updates_after_order(self, main_page, order_feed_page, login_page):
         test_email = DataHelper.get_test_user_email()
         test_password = DataHelper.get_test_user_password()
         
-        if "test" in test_email.lower() and "test" in test_password.lower():
-            pytest.skip("Требуются действительные тестовые учетные данные для авторизации. "
-                       "Настройте правильные email и пароль в DataHelper.")
-        
-        with allure.step("Получить начальные значения счетчиков"):
+        with allure.step("Получить начальное значение общего счетчика"):
             order_feed_page.open()
             initial_total = order_feed_page.get_total_orders_count()
+        
+        with allure.step("Авторизация и создание заказа"):
+            main_page.open()
+            
+            with allure.step("Авторизоваться"):
+                main_page.click_personal_account()
+                login_page.wait_for_page_loaded()
+                login_page.complete_login(test_email, test_password)
+                main_page.click_constructor()
+                main_page.wait_for_main_page_loaded()
+            
+            with allure.step("Создать тестовый заказ"):
+                if not main_page.has_ingredients():
+                    pytest.skip("Нет доступных ингредиентов для создания заказа")
+                
+                with allure.step("Добавить ингредиенты в конструктор"):
+                    main_page.add_ingredients_to_constructor()
+                
+                main_page.create_test_order()
+                
+                if main_page.wait_for_order_confirmation(timeout=20):
+                    order_number = main_page.get_created_order_number()
+                    with allure.step(f"Заказ №{order_number} успешно создан"):
+                        main_page.close_order_modal()
+                else:
+                    pytest.skip("Не удалось дождаться подтверждения заказа")
+        
+        with allure.step("Проверить обновление общего счетчика"):
+            order_feed_page.open()
+            order_feed_page.wait_for_page_loaded()
+            new_total = order_feed_page.get_total_orders_count()
+        
+        with allure.step("Проверить изменение общего счетчика"):
+            assert new_total >= initial_total, (
+                f"Общий счетчик заказов должен увеличиться. Было: {initial_total}, стало: {new_total}"
+            )
+
+    @allure.title("Проверка изменения дневного счетчика заказов после оформления")
+    @allure.description("Тест проверяет изменение дневного счетчика заказов после успешного оформления")
+    def test_today_order_counter_updates_after_order(self, main_page, order_feed_page, login_page):
+        test_email = DataHelper.get_test_user_email()
+        test_password = DataHelper.get_test_user_password()
+        
+        with allure.step("Получить начальное значение дневного счетчика"):
+            order_feed_page.open()
             initial_today = order_feed_page.get_today_orders_count()
         
         with allure.step("Авторизация и создание заказа"):
             main_page.open()
             
-            with allure.step("ШАГ 1: Проверить авторизацию"):
-                if main_page.is_visible(main_page.locators.LOGIN_BUTTON, timeout=2):
-                    with allure.step("Не авторизованы - выполняем вход"):
-                        main_page.click_personal_account()
-                        
-                        login_page.wait_for_page_loaded()
-                        current_url = login_page.get_current_url()
-                        if "login" not in current_url:
-                            pytest.skip(f"Не удалось перейти на страницу логина. Текущий URL: {current_url}")
-                        
-                        if not login_page.is_login_form_present():
-                            pytest.skip("Форма логина не загрузилась")
-                        
-                        login_page.complete_login(test_email, test_password)
-                        
-                        error_message = login_page.get_error_message()
-                        if error_message:
-                            pytest.skip(f"Ошибка авторизации: {error_message}")
-                        
-                        with allure.step("Перейти на главную страницу после логина"):
-                            main_page.click_constructor()
-                            main_page.wait_for_main_page_loaded()
-                        
-                        if main_page.is_visible(main_page.locators.LOGIN_BUTTON, timeout=3):
-                            pytest.skip("Авторизация не удалась - кнопка 'Войти' все еще видна")
-                
-                with allure.step("ШАГ 2: Проверить, что мы на главной странице"):
-                    if not main_page.is_main_page_loaded():
-                        pytest.skip("Не удалось загрузить главную страницу после авторизации")
-                
-                with allure.step("ШАГ 3: Создать тестовый заказ"):
-                    try:
-                        if not main_page.has_ingredients():
-                            pytest.skip("Нет доступных ингредиентов для создания заказа")
-                        
-                        main_page.create_test_order()
-                        
-                        if main_page.wait_for_order_confirmation(timeout=20):
-                            order_number = main_page.get_created_order_number()
-                            with allure.step(f"Заказ №{order_number} успешно создан"):
-                                main_page.close_order_modal()
-                        else:
-                            pytest.skip("Не удалось дождаться подтверждения заказа")
-                            
-                    except Exception as e:
-                        main_page.take_screenshot("order_creation_error")
-                        error_msg = str(e) if str(e) else "Неизвестная ошибка при создании заказа"
-                        pytest.skip(f"Не удалось создать заказ: {error_msg}")
+            with allure.step("Авторизоваться"):
+                main_page.click_personal_account()
+                login_page.wait_for_page_loaded()
+                login_page.complete_login(test_email, test_password)
+                main_page.click_constructor()
+                main_page.wait_for_main_page_loaded()
             
-            with allure.step("Проверить обновление счетчиков"):
-                order_feed_page.open()
-                order_feed_page.wait_for_page_loaded()
+            with allure.step("Создать тестовый заказ"):
+                if not main_page.has_ingredients():
+                    pytest.skip("Нет доступных ингредиентов для создания заказа")
                 
-                new_total = order_feed_page.get_total_orders_count()
-                new_today = order_feed_page.get_today_orders_count()
-            
-            with allure.step("Проверить изменение счетчиков"):
-                assert new_total >= initial_total, (
-                    f"Общий счетчик заказов должен увеличиться. Было: {initial_total}, стало: {new_total}"
-                )
-                assert new_today >= initial_today, (
-                    f"Дневной счетчик заказов должен увеличиться. Было: {initial_today}, стало: {new_today}"
-                )
+                with allure.step("Добавить ингредиенты в конструктор"):
+                    main_page.add_ingredients_to_constructor()
+                
+                main_page.create_test_order()
+                
+                if main_page.wait_for_order_confirmation(timeout=20):
+                    order_number = main_page.get_created_order_number()
+                    with allure.step(f"Заказ №{order_number} успешно создан"):
+                        main_page.close_order_modal()
+                else:
+                    pytest.skip("Не удалось дождаться подтверждения заказа")
+        
+        with allure.step("Проверить обновление дневного счетчика"):
+            order_feed_page.open()
+            order_feed_page.wait_for_page_loaded()
+            new_today = order_feed_page.get_today_orders_count()
+        
+        with allure.step("Проверить изменение дневного счетчика"):
+            assert new_today >= initial_today, (
+                f"Дневной счетчик заказов должен увеличиться. Было: {initial_today}, стало: {new_today}"
+            )
 
     @allure.title("Проверка счетчика 'Выполнено за всё время'")
     def test_total_orders_counter_available(self, order_feed_page):

@@ -1,5 +1,6 @@
 import allure
 from selenium.webdriver.common.by import By
+from selenium.webdriver import ActionChains
 from pages.base_page import BasePage
 from locators.main_page_locators import MainPageLocators
 from locators.order_modal_locators import OrderModalLocators
@@ -84,26 +85,47 @@ class MainPage(BasePage):
     @allure.step("Добавить ингредиент в конструктор по индексу {index}")
     def add_ingredient_to_constructor(self, index):
         ingredients = self.find_elements(self.locators.INGREDIENT_ITEM)
-        if ingredients and index < len(ingredients):
-            self.execute_script("arguments[0].scrollIntoView({block: 'center'});", ingredients[index])
-            self.wait.wait_for_element_clickable(self.locators.INGREDIENT_ITEM)
+        if not ingredients or index >= len(ingredients):
+            raise Exception(f"Ингредиент с индексом {index} не найден")
         
-        try:
-            self.execute_script("arguments[0].click();", ingredients[index])
-        except:
-            ingredients[index].click()
+        self.execute_script("arguments[0].scrollIntoView({block: 'center'});", ingredients[index])
+        
+        self.wait.wait_for_element_visible(self.locators.INGREDIENT_ITEM)
+        
+        constructor_area = self.find_element(self.locators.CONSTRUCTOR_AREA)
+        
+        action = ActionChains(self.driver)
+        action.drag_and_drop(ingredients[index], constructor_area).perform()
+        
+        return self
+
+    @allure.step("Добавить ингредиенты в конструктор")
+    def add_ingredients_to_constructor(self):
+        """Добавляет базовые ингредиенты в конструктор"""
+        with allure.step("Добавить булку"):
+            self.add_ingredient_to_constructor(0)
+        
+        with allure.step("Добавить соус"):
+            sauces_start_index = 2  
+            self.add_ingredient_to_constructor(sauces_start_index)
+        
+        with allure.step("Добавить начинку"):
+            fillings_start_index = 4  
+            self.add_ingredient_to_constructor(fillings_start_index)
+        
         return self
 
     @allure.step("Создать тестовый заказ")
     def create_test_order(self):
         self.wait.wait_for_element_visible(self.locators.INGREDIENT_ITEM)
     
-        with allure.step("Добавить ингредиенты в конструктор"):
-            self.add_ingredient_to_constructor(0)
-            self.add_ingredient_to_constructor(1)
-            self.add_ingredient_to_constructor(2)
+        self.add_ingredients_to_constructor()
+    
+        if not self.is_visible(self.locators.ORDER_BUTTON_ACTIVE, timeout=5):
+            raise Exception("Кнопка 'Оформить заказ' не стала активной после добавления ингредиентов")
     
         return self.click_make_order()
+
     @allure.step("Проверить статус авторизации")
     def check_auth_status(self):
         try:
@@ -125,7 +147,9 @@ class MainPage(BasePage):
     
     @allure.step("Закрыть модальное окно заказа")
     def close_order_modal(self):
-        return self.is_visible(OrderModalLocators.ORDER_MODAL_CLOSE, timeout=5)
+        if self.is_visible(OrderModalLocators.ORDER_MODAL_CLOSE, timeout=5):
+            self.click(OrderModalLocators.ORDER_MODAL_CLOSE)
+        return self
     
     @allure.step("Проверить наличие кнопки конструктора")
     def is_constructor_button_present(self):
@@ -199,3 +223,7 @@ class MainPage(BasePage):
     @allure.step("Дождаться видимости элемента")
     def wait_for_element_visible(self, locator, timeout=10):
         return self.wait.wait_for_element_visible(locator, timeout)
+    
+    @allure.step("Проверить, что кнопка заказа активна")
+    def is_order_button_active(self):
+        return self.is_visible(self.locators.ORDER_BUTTON_ACTIVE, timeout=5)
